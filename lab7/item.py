@@ -10,45 +10,58 @@
 
 
 class Item:
-    def __init__(self, weight=0.1, name="DefaultItem"):
-        if not name:
-            raise ValueError("Name cannot be empty")
-        if weight < 0:
-            raise ValueError("Weight cannot be 0 or negative")
+    def __init__(self, weight=0.1):
+        if weight <= 0:
+            raise (ValueError("Weight cannot be 0 or negative!"))
         self._weight = weight
-        self._name = name
 
     def weight(self):
         return self._weight
 
-    def name(self):
-        return self._name
-
 
 class Container(Item):
-    def __init__(self, items, max_load):
-        if not items:
-            items = []
-        super().__init__()
-        self._items = items
+    def __init__(self, weight=0.1, max_load=0.5, items=[]):
+        super().__init__(weight)
+        self._max_load = 0
+        self._items = []
+
+        if max_load < 0:
+            raise ValueError(f"Max load cannot be negative - provided {max_load}")
+
+        for item in items:
+            self._check_if_valid_item(item)
+            self._check_if_not_exceed_max_load(item)
         self._max_load = max_load
-        if sum(items._weight) > max_load:
+        self._items = items
+
+    def _check_if_valid_item(self, item):
+        if not isinstance(item, Item):
+            raise TypeError(f"{type(item)} is not a (sub)instance of {Item.__name__}")
+
+    def _check_if_not_exceed_max_load(
+        self, item, weight=self._weight, max_load=self._max_load
+    ):
+        if weight + item.weight() > max_load:
             raise ValueError(
-                "Sum of items' weights cannot be"
-                + "greater than max load of a container"
+                f"Adding this item would exceed " + "max load of the container"
             )
 
-    def _check_if_item_fits(self, item):
-        if self.max_load + item.weight() > self._max_load:
-            return False
-        else:
-            return True
+    def items(self):
+        return self._items
 
-    def put_item_into_container(self, item):
-        if not self._check_if_item_fits(item):
-            raise ValueError("Weight of a specified item is too big")
+    def weight(self):
+        def get_weight(item):
+            return item.weight()
+
+        return sum(map(get_weight, self.items())) + self._weight
+
+    def max_load(self):
+        return self._max_load
+
+    def put(self, item):
+        self._check_if_valid_item(item)
         self._items.append(item)
 
-    def show_items(self):
-        for name, weight in zip(self._items.name(), self._items.weight()):
-            print(f"{name}: {weight}")
+    # def print_weights(self):
+    #     for item in self.items():
+    #         print f"{item.__name__}: {item.weight()}"
