@@ -80,3 +80,24 @@ def test_container_wrong_put_input():
     container = Container()
     with pytest.raises(TypeError):
         container.put("a")
+
+
+def test_container_exceed_put_input():
+    item = Item(weight=1)
+    container = Container()
+    with pytest.raises(ValueError):
+        container.put(item)
+
+
+def test_container_pop_normal():
+    item = Item()
+    container = Container(items=[item])
+    assert item == container.pop(item)
+    assert container.items() == []
+
+
+def test_container_pop_wrong_item():
+    item = Item()
+    container = Container(items=[])
+    with pytest.raises(ValueError):
+        container.pop(item)
